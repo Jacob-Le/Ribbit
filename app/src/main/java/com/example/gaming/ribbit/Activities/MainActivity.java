@@ -1,4 +1,4 @@
-package com.example.gaming.ribbit;
+package com.example.gaming.ribbit.Activities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import android.app.AlertDialog;
@@ -13,28 +14,30 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
-import android.preference.DialogPreference;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.example.gaming.ribbit.ParseConstants;
+import com.example.gaming.ribbit.R;
+import com.example.gaming.ribbit.Fragments.RecipientsActivity;
+import com.example.gaming.ribbit.SectionsPagerAdapter;
+import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseAnalytics;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 public class MainActivity extends AppCompatActivity implements ActionBar.TabListener {
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     public static final int FILE_SIZE_LIMIT = 1024*1024*10; // 10 mb
 
     protected Uri mMediaUri;
+
 
 
     protected DialogInterface.OnClickListener mDialogListener = new DialogInterface.OnClickListener() {
@@ -212,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
         }
     }
 
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -260,8 +266,18 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
                 mediaScanIntent.setData(mMediaUri);
                 sendBroadcast(mediaScanIntent);
             }
+            Intent recipientsIntent = new Intent(this, RecipientsActivity.class);
+            recipientsIntent.setData(mMediaUri);
 
-
+            String fileType;
+            if(requestCode == PICK_PHOTO_REQUEST || requestCode == TAKE_PHOTO_REQUEST){
+                fileType = ParseConstants.TYPE_IMAGE;
+            }
+            else{
+                fileType = ParseConstants.TYPE_VIDEO;
+            }
+            recipientsIntent.putExtra(ParseConstants.KEY_FILE_TYPE, fileType);
+            startActivity(recipientsIntent);
         }
         else if(resultCode != RESULT_CANCELED){
             Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();
@@ -294,16 +310,18 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
             case R.id.action_logout:
                 ParseUser.logOut();
                 navigateToLogin();
+                break;
 
             case R.id.action_edit_friends:
                 Intent intent = new Intent(this, EditFriendsActivity.class);
                 startActivity(intent);
-
+                break;
             case R.id.action_camera:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setItems(R.array.camera_choices, mDialogListener);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

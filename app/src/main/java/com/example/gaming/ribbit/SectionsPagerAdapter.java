@@ -5,6 +5,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.example.gaming.ribbit.Fragments.FriendsFragment;
+import com.example.gaming.ribbit.Fragments.InboxFragment;
+
 import java.util.Locale;
 
 /**
